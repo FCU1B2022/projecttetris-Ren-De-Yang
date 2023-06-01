@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
@@ -21,6 +21,9 @@
 
 #define CANVAS_WIDTH 10
 #define CANVAS_HEIGHT 20
+
+#define SCREEN_WIDTH 60
+#define SCREEN_HEIGHT 20
 
 typedef enum {
     RED = 41,
@@ -449,9 +452,89 @@ void logic(Block canvas[CANVAS_HEIGHT][CANVAS_WIDTH], State* state)
     return;
 }
 
+// detect what user typed, if nothing, return -1
+int keyboard(void)
+{
+    if (_kbhit() != 0)
+        return _getch();
+    else
+        return -1;
+}
+
+void hideCursor() {
+    // 隱藏鼠標
+    CONSOLE_CURSOR_INFO cursor;
+    cursor.bVisible = false;
+    cursor.dwSize = sizeof(cursor);
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorInfo(handle, &cursor);
+}
+
+void printCenter(int height, char* str) {
+    int len = strlen(str);
+    printf("\033[%d;%dH%s", height, (SCREEN_WIDTH - len) / 2 - 1, str);
+}
+
+void refreshLine(int height) {
+    printf("\033[%d;0H%s", height, "                                                            ");
+}
+
+void opening() {
+    printCenter(3, "######## ######## ######## ########  ####  ###### ");
+    printCenter(4, "   ##    ##          ##    ##     ##  ##  ##    ##");
+    printCenter(5, "   ##    ##          ##    ##     ##  ##  ##      ");
+    printCenter(6, "   ##    ######      ##    ########   ##   ###### ");
+    printCenter(7, "   ##    ##          ##    ##   ##    ##        ##");
+    printCenter(8, "   ##    ##          ##    ##    ##   ##  ##    ##");
+    printCenter(9, "   ##    ########    ##    ##     ## ####  ###### ");
+
+    int frameCount = 0; // 計算閃爍間隔
+    while (true) {
+        if (keyboard() == 32) {
+            break;
+        }
+
+        refreshLine(12);
+
+        // 閃爍效果
+        if (frameCount % 13 < 8)
+        {
+            printCenter(12, "Press space to continue");
+        }
+        frameCount++;
+        if (frameCount == 13)
+        {
+            frameCount = 0;
+        }
+
+        Sleep(100);
+    }
+
+    system("cls");
+}
+
+void timer()
+{
+    char word[3][2] = {
+        "1", "2", "3" };
+    for (int i = 3; i > 0; i--)
+    {
+        // system("cls");
+        printCenter(SCREEN_HEIGHT / 2, word[i - 1]);
+        Sleep(1000);
+    }
+
+    system("cls");
+}
+#include<locale.h>
 int main()
 {
-    srand(time(NULL));
+    setlocale(LC_ALL, "en_US.utf8");
+    const char martini[5] = { 0xF0, 0x9F, 0x8D, 0xB8, '\0' };
+    printf("%s", martini);
+
+    // init game
+    /*srand(time(NULL));
     State state = {
         .x = CANVAS_WIDTH / 2,
         .y = 0,
@@ -474,7 +557,10 @@ int main()
         }
     }
 
+    hideCursor();
     system("cls");
+    opening();
+    timer();
     // printf("\e[?25l"); // hide cursor
 
     move(canvas, state.x, state.y, state.rotate, state.x, state.y, state.rotate, state.queue[0]);
@@ -484,6 +570,5 @@ int main()
         logic(canvas, &state);
         printCanvas(canvas, &state);
         Sleep(100);
-    }
-
+    }*/
 }
